@@ -34,29 +34,46 @@ export function ChatPanel({
   const { submitUserMessage } = useActions()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
-  const exampleMessages = [
+  const examplesMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: '건설 기술',
+      subheading: '최신 동향은 무엇인가요?',
+      message: `건설 현장에서 최신 건설 기술 동향은 무엇인가요?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: '프로젝트 리스크',
+      subheading: '관리 방법은 무엇인가요?',
+      message: '건설 현장에서 건설 프로젝트의 리스크 관리 방법은 무엇인가요?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: '건설 현장',
+      subheading: '안전을 유지하기 위한 주요 지침은 무엇인가요?',
+      message: `건설 현장에서 건설 현장에서 안전을 유지하기 위한 주요 지침은 무엇인가요?`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: '프로젝트 일정',
+      subheading: `지연 시 대응 방안은 무엇인가요?`,
+      message: `건설 현장에서 프로젝트 일정 지연 시 대응 방안은 무엇인가요?`
+    },
+    {
+      heading: '건설 자재',
+      subheading: `비용 절감을 위한 전략은 무엇인가요?`,
+      message: `건설 현장에서 건설 자재 비용 절감을 위한 전략은 무엇인가요?`
+    },
+    {
+      heading: '프로젝트 예산',
+      subheading: `관리 방법은 무엇인가요?`,
+      message: `건설 현장에서 프로젝트 예산 관리 방법은 무엇인가요?`
+    },
+    {
+      heading: '예산 초과',
+      subheading: `방지를 위한 전략은 무엇인가요?`,
+      message: `건설 현장에서 예산 초과를 방지하기 위한 전략은 무엇인가요?`
     }
   ]
 
+    const exampleMessages = examplesMessages.sort(() => Math.random() - 0.5).slice(0, 4);
+  
   return (
     <div className="fixed inset-x-0 bottom-0 w-full bg-transparent duration-300 ease-in-out peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px] dark:from-10%">
       <ButtonScrollToBottom
