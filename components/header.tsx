@@ -74,7 +74,7 @@ export function Header() {
         >
           <IconVercel className="mr-2" />
           <span className="hidden sm:block">Baronet</span>
-          <span className="sm:hidden">Deploy</span>
+          <span className="sm:hidden">Baronet</span>
         </a>
       </div>
     </header>

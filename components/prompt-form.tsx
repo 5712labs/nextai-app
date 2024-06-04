@@ -66,8 +66,7 @@ export function PromptForm({
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
-      {/* <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12"> */}
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 px-12 sm:rounded-full sm:px-12">
+      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 px-12 sm:rounded-xl sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -75,7 +74,11 @@ export function PromptForm({
               size="icon"
               className="absolute left-0 top-[14px] size-8 rounded-full bg-background dark:bg-zinc-800 p-0 sm:left-4"
               onClick={() => {
-                router.push('/new')
+                const messages = [{role: 'user', content: [
+                  {type: 'text', text: '그림 설명해줘'}, 
+                  {type: 'image', image: new URL('https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg')}
+                ]}]
+                console.log(messages)
               }}
             >
               <IconPlus />
