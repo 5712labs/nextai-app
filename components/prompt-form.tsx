@@ -9,6 +9,8 @@ import { UserMessage } from './stocks/message'
 import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { ImageIcon } from '@radix-ui/react-icons'
+
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +19,7 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function PromptForm({
   input,
@@ -28,7 +31,7 @@ export function PromptForm({
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage } = useActions()
+  const { submitUserMessage, describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
   React.useEffect(() => {
@@ -36,6 +39,9 @@ export function PromptForm({
       inputRef.current.focus()
     }
   }, [])
+
+  const fileRef = React.useRef<HTMLInputElement>(null)
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
 
   return (
     <form
@@ -60,12 +66,73 @@ export function PromptForm({
             display: <UserMessage>{value}</UserMessage>
           }
         ])
-
+        // console.log(value)
         // Submit and get response message
         const responseMessage = await submitUserMessage(value)
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
+      <input
+        type="file"
+        className="hidden"
+        id="file"
+        ref={fileRef}
+        onChange={async event => {          
+          if (!event.target.files) {
+            toast.error('No file selected')
+            return
+          }
+          const file = event.target.files[0]
+          const oFReader = new FileReader();
+          oFReader.readAsDataURL(file);
+          oFReader.onload = async (event: any) => {
+            const image = new Image();
+            image.src = event.target.result;
+            image.onload = async () => {
+              const canvas = document.createElement('canvas');
+              let width = image.width, height = image.height;
+              const maxSize = 640;
+              if (width > height && width > maxSize)
+                {
+                  height *= maxSize / width;
+                  width = maxSize;
+                }
+                else if (height > maxSize)
+                {
+                  width *= maxSize / height;
+                  height = maxSize;
+                }
+              canvas.width = width;
+              canvas.height = height;
+              canvas?.getContext('2d')?.drawImage(image, 0, 0, width, height);         
+              const base64str = canvas.toDataURL('image/jpeg');
+              // console.log(`width : ${image.width} px`, `height: ${image.height} px`);
+              // console.log(`width : ${canvas.width} px`, `height: ${canvas.height} px`);
+              // console.log(base64str)
+              const responseMessage = await describeImage(base64str)
+              setMessages(currentMessages => [
+                ...currentMessages,
+                responseMessage
+              ])
+            };
+          };
+
+          // if (file.size > MAX_FILE_SIZE) {
+          //   toast.error('File size exceeds the 1MB limit.');
+          //   return;
+          // }
+          // const reader = new FileReader();
+          // reader.readAsDataURL(file)
+          // reader.onloadend = async () => {
+          //   const base64String = reader.result
+          //   const responseMessage = await describeImage(base64String)
+          //   setMessages(currentMessages => [
+          //     ...currentMessages,
+          //     responseMessage
+          //   ])
+          // }
+        }}
+      />
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 px-12 sm:rounded-xl sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -74,18 +141,15 @@ export function PromptForm({
               size="icon"
               className="absolute left-0 top-[14px] size-8 rounded-full bg-background dark:bg-zinc-800 p-0 sm:left-4"
               onClick={() => {
-                const messages = [{role: 'user', content: [
-                  {type: 'text', text: '그림 설명해줘'}, 
-                  {type: 'image', image: new URL('https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg')}
-                ]}]
-                console.log(messages)
+                fileRef.current?.click()
               }}
             >
-              <IconPlus />
-              <span className="sr-only">New Chat</span>
+              {/* <IconPlus /> */}
+              <ImageIcon />              
+              <span className="sr-only">이미지를 분석해보세요</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>이미지를 분석해보세요</TooltipContent>
         </Tooltip>
         <Textarea
           ref={inputRef}

@@ -1,3 +1,7 @@
+// @ts-nocheck
+
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
 import 'server-only'
 
 import {
@@ -35,6 +39,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
+import Image from 'next/image'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -105,7 +110,57 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
     }
   }
 }
+async function describeImage(imageBase64: string) {
+  'use server'
 
+  // const base64data = new Buffer.from(imageBase64.split(',')[1], 'base64').toString('base64');
+  // console.log('2------------------------------')
+  // console.log(base64data)
+  const aiState = getMutableAIState<typeof AI>()
+  const userImg = {
+    type: 'image',
+    image: imageBase64.split(',')[1]
+  }
+
+  aiState.done({
+    ...aiState.get(),
+    messages: [
+      ...aiState.get().messages,
+      {
+        id: nanoid(),
+        role: 'user',
+        content: [userImg]
+      }
+    ]
+  })
+
+  const uiStream = createStreamableUI()
+  
+  uiStream.done(
+    <BotCard>
+      <Image
+        src={imageBase64}
+        width={640}
+        height={640}
+        alt="Picture of the author"
+      />
+    {/* <Video isLoading /> */}
+    </BotCard>
+  )
+
+  const spinnerStream = createStreamableUI(null)
+  const messageStream = createStreamableUI(null)
+
+  spinnerStream.done(null)
+  messageStream.done(null)
+
+  return {
+    id: nanoid(),
+    attachments: uiStream.value,
+    spinner: spinnerStream.value,
+    display: messageStream.value
+  } 
+}
 async function submitUserMessage(content: string) {
   'use server'
 
@@ -125,7 +180,6 @@ async function submitUserMessage(content: string) {
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
-
 
   const result = await streamUI({
     model: openai('gpt-4o'),
@@ -174,6 +228,7 @@ async function submitUserMessage(content: string) {
 
 export type AIState = {
   chatId: string
+  interactions?: string[]
   messages: Message[]
 }
 
@@ -187,10 +242,12 @@ export type UIState = {
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
+    describeImage,
     confirmPurchase
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
+  // initialAIState: { chatId: nanoid(), messages: [] },
+  initialAIState: { chatId: nanoid(), interactions: [], messages: [] },
   onGetUIState: async () => {
     'use server'
 
@@ -201,6 +258,7 @@ export const AI = createAI<AIState, UIState>({
 
       if (aiState) {
         const uiState = getUIStateFromAIState(aiState)
+
         return uiState
       }
     } else {
