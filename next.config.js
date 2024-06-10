@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
+  basePath: '/ai',
   images: {
     remotePatterns: [
       {
