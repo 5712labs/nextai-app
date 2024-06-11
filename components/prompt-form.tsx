@@ -52,7 +52,7 @@ export function PromptForm({
       return
     }
     
-    acceptedFiles.forEach((file) => {
+    acceptedFiles.forEach((file, index) => {
       if (!file) {
         toast.error('No file selected!')
         return
@@ -69,6 +69,7 @@ export function PromptForm({
       image.src = event.target.result;
       image.onload = async () => {
         const canvas = document.createElement('canvas');
+        // canvas.id = image.src
         let width = image.width, height = image.height;
         const maxSize = 640;
         if (width > height && width > maxSize)
@@ -88,11 +89,17 @@ export function PromptForm({
         // console.log(`width : ${image.width} px`, `height: ${image.height} px`);
         // console.log(`width : ${canvas.width} px`, `height: ${canvas.height} px`);
         // console.log(base64str)
+
+        for (let i = 0; i < index; i++) {
+          await describeImage(base64str)
+        }
+        
         const responseMessage = await describeImage(base64str)
         setMessages(currentMessages => [
           ...currentMessages,
           responseMessage
         ])
+
       };
     }
     })
@@ -135,7 +142,7 @@ export function PromptForm({
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 px-12 sm:rounded-xl sm:px-12">
-        <div {...getRootProps({isFocused, isDragAccept, isDragReject})}>
+        <div {...getRootProps()}>
           <input {...getInputProps()} />
           <Tooltip>
             <TooltipTrigger asChild>
