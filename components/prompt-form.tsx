@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import {useCallback} from 'react'
+import {useCallback, useState} from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import { useActions, useUIState } from 'ai/rsc'
@@ -9,8 +9,8 @@ import { useActions, useUIState } from 'ai/rsc'
 import { UserMessage } from './stocks/message'
 import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
-import { ImageIcon } from '@radix-ui/react-icons'
+import { IconArrowElbow } from '@/components/ui/icons'
+import { ImageIcon, UploadIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 
 import {
   Tooltip,
@@ -43,6 +43,9 @@ export function PromptForm({
   }, [])
 
   const fileRef = React.useRef<HTMLInputElement>(null)
+
+
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length == 0) {
       toast.error('No file selected')
@@ -95,18 +98,15 @@ export function PromptForm({
     })
     
   }, [describeImage, setMessages])
-  const {getRootProps, getInputProps} = useDropzone({onDrop})
-  // const { getRootProps, getInputProps, isDragAccept, isDragReject } =
-  // useDropzone({
-  // onDrop,
-  // onDropRejected,
-  //   accept: {
-  //     "image/jpeg": [],
-  //     "image/png": [],
-  //     "application/pdf": [],
-  //   },
-  //   maxSize: 50 * 1024 * 1024, // 50MB
-  // });
+  const {getRootProps, getInputProps, isFocused, isDragAccept, isDragReject} = 
+    useDropzone({
+      onDrop, 
+      accept: {
+        'image/*': [],
+        'application/pdf': [],
+      },
+      maxSize: 50 * 1024 * 1024, // 50MB
+    })
   return (
     <form
       ref={formRef}
@@ -135,7 +135,7 @@ export function PromptForm({
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 px-12 sm:rounded-xl sm:px-12">
-        <div {...getRootProps()}>
+        <div {...getRootProps({isFocused, isDragAccept, isDragReject})}>
           <input {...getInputProps()} />
           <Tooltip>
             <TooltipTrigger asChild>
@@ -144,16 +144,12 @@ export function PromptForm({
                 variant="outline"
                 size="icon"
                 className="absolute left-0 top-[14px] size-8 rounded-full bg-background dark:bg-zinc-800 p-0 sm:left-4"
-                // onClick={() => {
-                //   fileRef.current?.click()
-                // }}
               >
-                <ImageIcon />              
-                <span className="sr-only">이미지를 분석해보세요</span>
+                {isDragAccept ? ( <UploadIcon /> ) : isDragReject ? ( <ExclamationTriangleIcon /> ) : ( <ImageIcon /> )} 
               </Button>
               </label>
             </TooltipTrigger>
-            <TooltipContent>이미지를 분석해보세요</TooltipContent>
+            <TooltipContent>클릭하거나 이미지 끌어와서 질문해보세요.</TooltipContent>
           </Tooltip>
         </div>
         <Textarea
